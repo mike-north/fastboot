@@ -403,18 +403,21 @@ function createShoebox(doc, fastbootInfo) {
 
   for (let key in shoebox) {
     if (!shoebox.hasOwnProperty(key)) { continue; }
+    try {
+      let value = shoebox[key];
+      let textValue = JSON.stringify(value);
+      textValue = escapeJSONString(textValue);
 
-    let value = shoebox[key];
-    let textValue = JSON.stringify(value);
-    textValue = escapeJSONString(textValue);
+      let scriptText = doc.createRawHTMLSection(textValue);
+      let scriptEl = doc.createElement('script');
 
-    let scriptText = doc.createRawHTMLSection(textValue);
-    let scriptEl = doc.createElement('script');
-
-    scriptEl.setAttribute('type', 'fastboot/shoebox');
-    scriptEl.setAttribute('id', `shoebox-${key}`);
-    scriptEl.appendChild(scriptText);
-    doc.body.appendChild(scriptEl);
+      scriptEl.setAttribute('type', 'fastboot/shoebox');
+      scriptEl.setAttribute('id', `shoebox-${key}`);
+      scriptEl.appendChild(scriptText);
+      doc.body.appendChild(scriptEl);
+    } catch(e) {
+      throw new Error("Unable to serialize JSON data into shoebox[" + key + "] " + JSON.stringify(Object.keys(shoebox[key])));
+    }
   }
 
   return RSVP.resolve();
